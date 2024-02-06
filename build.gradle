@@ -116,6 +116,11 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+
+    flatDir {
+        dir 'libs'
+    }
+
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
@@ -127,6 +132,8 @@ repositories {
 }
 
 dependencies {
+
+    implementation files('libs/epicfight-20.6.5.jar')
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.

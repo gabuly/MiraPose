@@ -1,10 +1,10 @@
-package com.mirapose.api;
-
-public interface IMiraAPI {
-    int getMira();
+//package com.mirapose.api;
 //
-//    void addMira(int add);
-//
-//    void subMira(int sub);
-  //  boolean getSwitch();
-}
+//public interface IMiraAPI {
+//    int getMira();
+////
+////    void addMira(int add);
+////
+////    void subMira(int sub);
+//  //  boolean getSwitch();
+//}

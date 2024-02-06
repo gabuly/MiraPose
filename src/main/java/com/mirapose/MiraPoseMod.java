@@ -1,18 +1,26 @@
 package com.mirapose;
 
+import com.mirapose.network.ModMessages;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 import static com.mojang.text2speech.Narrator.LOGGER;
 import static net.minecraft.nbt.Tag.TAG_COMPOUND;
@@ -25,84 +33,53 @@ public class MiraPoseMod {
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_YELLOW = "\u001B[33m";
+    public static SimpleChannel CHANNEL;
+    private static final String PROTOCOL_VERSION = "1";
+
     public MiraPoseMod(){
-
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addListener(this::commonSetup);
+        MinecraftForge.EVENT_BUS.register(this);
+    }
+    private void commonSetup(final FMLCommonSetupEvent event){
+                ModMessages.register();
     }
 
-    @SubscribeEvent
-    public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        Player player = event.getEntity();
-        CompoundTag persistentData = player.getPersistentData();
-        CompoundTag modData;
+    @Mod.EventBusSubscriber(modid = "mirapose", bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ClientModEvents {
+        @SubscribeEvent
+        public static void onClientSetup(FMLClientSetupEvent event) {
 
-        // Create a new tag to store your mod's data if it doesn't exist
-        if (!persistentData.contains("mirapose:mira")) {
-            modData = new CompoundTag();
-            persistentData.put("mirapose:mira", modData);
-        } else {
-            modData = persistentData.getCompound("mirapose:mira");
-        }
-
-        // Set your data
-        modData.putInt("mira", 100); // Just an example; you can set any data you want
-    }
-
-//@SubscribeEvent
-//    public static void onXpGain(PlayerXpEvent.PickupXp event) {
-//    CompoundTag NBTdata =  event.getEntity().getPersistentData();
-//    event.getEntity().sendSystemMessage(Component.literal("mira detected ::::: "+NBTdata.getInt("mirapose:mira")));
-//}}
-
-
-//
-//
-    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.register(PlayerMira.class);
-   }
-    @SubscribeEvent
-    public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof Player) {
-            if (!event.getObject().getCapability(PlayerMiraProvider.PLAYER_Mira).isPresent()) {
-                event.addCapability(new ResourceLocation("mirapose", "miraproperty"), new PlayerMiraProvider());
-            }
         }
     }
-
-    @SubscribeEvent
-    public static void onPlayerCloned(PlayerEvent.Clone event) {
-        if (event.isWasDeath()) {
-            event.getOriginal().getCapability(PlayerMiraProvider.PLAYER_Mira).ifPresent(oldStore -> {
-                event.getEntity().getCapability(PlayerMiraProvider.PLAYER_Mira).ifPresent(newStore -> {
-                    newStore.copyFrom(oldStore);
-                });
-            });
-        }
-    }
+}
 //
 ////    @SubscribeEvent
 ////    public static void onRegisterCapability(RegisterCapabilitiesEvent event) {
 ////    event.register(PlayerMira.class);
 ////}
 
-    @SubscribeEvent
-    public static void onXpGain(PlayerXpEvent.PickupXp event) {
-        Player player = (Player) event.getEntity();
-        player.getCapability(PlayerMiraProvider.PLAYER_Mira).ifPresent(mira ->{
-        mira.addMira(event.getOrb().getValue());
-        //LOGGER.info(ANSI_GREEN + "MIRA Gained: " + mira.getMira() + ANSI_RESET);
-            player.getCapability(PlayerMiraProvider.PLAYER_Mira).ifPresent(playerMira -> {
-                player.sendSystemMessage(Component.literal("mira = "+ mira.getMira()));
-            });
+//    @SubscribeEvent
+//    public static void onXpGain(PlayerXpEvent.PickupXp event) {
+//        Player player = (Player) event.getEntity();
+//
+//        player.getCapability(PlayerMiraProvider.PLAYER_Mira).ifPresent(mira ->{
+//            player.sendSystemMessage(Component.literal("mira = "+ mira.getMira()));
+////            if(mira.getMira()>=10) {
+////            return;
+////            }
+//        mira.addMira(event.getOrb().getValue());
+//        //LOGGER.info(ANSI_GREEN + "MIRA Gained: " + mira.getMira() + ANSI_RESET);
+//
+//        });
+//    }    }
 
-            if(mira.getMira()>=10){
-                LOGGER.info(ANSI_GREEN + "CANMira!!! " + ANSI_RESET);
-               // mira.turnSwitch();
-                mira.subMira(10);
-            }
-
-
-        });
-    }}
+//@Override
+//public CompoundTag getUpdateTag(){
+//    CompoundTag nbt = super.getUpdateTag();
+//    saveNBTData();
+//    }
+//}
 
 
 //    @SubscribeEvent
