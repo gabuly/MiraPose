@@ -1,0 +1,5 @@
+-Mira charge count/set ✔
+-Switch condition ✔
+-Mirapose during battle mode
+-HUD
+-Modifiable mira attributes by armor/items
