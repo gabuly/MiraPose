@@ -25,7 +25,6 @@ public class S2CPacket {
     }
 
     public S2CPacket(FriendlyByteBuf buf){
-
         this.mira=buf.readInt();
     }
 
@@ -39,6 +38,6 @@ public class S2CPacket {
         ctx.enqueueWork(()->{
             ClientMiraData.set(mira);
         });
-
         return true;
-}}
+}
+}

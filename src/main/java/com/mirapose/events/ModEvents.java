@@ -25,6 +25,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerXpEvent;
@@ -32,6 +33,9 @@ import net.minecraftforge.event.village.VillagerTradesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
+import yesman.epicfight.events.SwitchBattleEvent;
+
+import yesman.epicfight.events.SwitchMiningEvent;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
@@ -41,36 +45,81 @@ import java.util.List;
 @Mod.EventBusSubscriber(modid = "mirapose")
 public class ModEvents {
     public static  PlayerPatch<?> getPlayerPatch(Player player) {
-        // Get the EpicFight capability from the player
         LazyOptional<EntityPatch> entityPatchOptional = player.getCapability(EpicFightCapabilities.CAPABILITY_ENTITY);
-        // Check if the capability is present and cast it to PlayerPatch if possible
         if (entityPatchOptional.isPresent()) {
             EntityPatch entityPatch = entityPatchOptional.orElse(null);
             if (entityPatch instanceof PlayerPatch playerPatch) {
-                // Here we can access methods of PlayerPatch, including checking the battle mode
                 return playerPatch;
             }
         }
-
-        // Default to false if the capability isn't present or isn't of type PlayerPatch
         return null;
     }
+
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if(event.side == LogicalSide.SERVER) {
             event.player.getCapability(PlayerMiraProvider.PLAYER_Mira).ifPresent(mira -> {
-                if(getPlayerPatch(event.player).isBattleMode()) { // Once Every 10 Seconds on Avg
+                if(getPlayerPatch(event.player).isBattleMode()) {
                     mira.subMira();
                     event.player.sendSystemMessage(Component.literal(+mira.getMira() + " mira left!! (S)" ));
                     if(mira.getMira()<=0){
                         getPlayerPatch(event.player).toggleMode();
                     }
-                    ModMessages.sendToPlayer(new S2CPacket(mira.getMira()), ((ServerPlayer) event.player));
+                    ModMessages.sendToPlayer(new S2CPacket(mira.getMira()), (ServerPlayer)event.player);
+                    event.player.sendSystemMessage(Component.literal(+ClientMiraData.getMira() + " tick client mira left!! (C)" ));
                 }
             });
         }
+
     }
-//
+
+
+    @SubscribeEvent
+    public static void SwitchBattleEvent(SwitchBattleEvent event) {
+        event.getEntity().sendSystemMessage(Component.literal(" Swtich eVENTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" ));
+        miraWeaponReplace(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public static void SwitchMinigEvent(SwitchMiningEvent event) {
+        event.getEntity().sendSystemMessage(Component.literal(" Swtich BACK======================" ));
+        miraWeaponBack(event.getEntity());
+    }
+    public static void  miraWeaponReplace(Player player) {
+        CompoundTag playerData = player.getPersistentData();
+        CompoundTag modData;
+
+        // Check if our mod's tag already exists
+        if (playerData.contains("MiraTag")) {
+            modData = playerData.getCompound("MiraTag");
+        } else {
+            modData = new CompoundTag();
+            playerData.put("MiraTag", modData);
+        }
+
+        // Record the current held item's CompoundTag
+        ItemStack currentItem = player.getMainHandItem();
+        if (!currentItem.isEmpty()) { // Ensure the player is holding an item
+            CompoundTag itemTag = currentItem.save(new CompoundTag());
+            modData.put("OriginalItem", itemTag);
+        }
+
+        // Replace with mira weapon
+        ItemStack miraWeapon = new ItemStack(Items.DIAMOND_SWORD); // Example: Replace with your actual mira weapon
+        player.getInventory().setItem(player.getInventory().selected, miraWeapon);
+    }
+
+    public static void  miraWeaponBack(Player player) {
+        CompoundTag playerData = player.getPersistentData();
+        CompoundTag  modData = playerData.getCompound("MiraTag");
+        CompoundTag itemTag = modData.getCompound("OriginalItem");
+       // Example: Replace with your actual mira weapon
+        ItemStack originalItem = ItemStack.of(itemTag);
+        player.getInventory().setItem(player.getInventory().selected, originalItem);
+        modData.remove("OriginalItem");
+
+    }
+
 //    @SubscribeEvent
 //    public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
 //        if(event.getObject() instanceof Player) {

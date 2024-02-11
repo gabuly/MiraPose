@@ -7,7 +7,7 @@ public class ClientMiraData {
        ClientMiraData.playerMira=mira;
     }
     public static void sub(){
-        ClientMiraData.playerMira--;
+    ClientMiraData.playerMira--;
     }
     public static int getMira(){
         return playerMira;
