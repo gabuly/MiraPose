@@ -8,7 +8,8 @@ public class PlayerMira {
     private int mira;
     //public boolean  canSwitch=false;
     private final int MIN_mira = 0;
-    private int MAX_mira = 200;
+    public int MAX_mira = 400;
+
 
     public int getMira() {
         return mira;
@@ -18,11 +19,14 @@ public class PlayerMira {
         this.mira = Math.min(mira + add, MAX_mira);
     }
     public void subMira() {
-        this.mira--;
+        this.mira = Math.max(mira - 1, MIN_mira);
+    }
+    public void setMira(int x) {
+        this.mira=x;
     }
 
     public void resetMira() {
-        this.mira = 0;
+        this.mira = 1;
     }
 
 //    public void turnSwitch() {
